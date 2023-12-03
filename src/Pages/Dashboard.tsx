@@ -177,11 +177,12 @@ export default function Dashboard() {
     setData(updatedData);
     setFilteredData(updatedData);
     setSelectedRows([]);
+    console.log("i am working")
   };
-  console.log(data);
+
   return (
     <div style={{ height: "100%", width: "100%" }}>
-      <SearchAppBar onSearch={handleSearch} />
+      <SearchAppBar onSearch={handleSearch} onDeleteSelected={handleDeleteSelected} />
       <DataGrid
         rows={currentPageData}
         columns={columns}
