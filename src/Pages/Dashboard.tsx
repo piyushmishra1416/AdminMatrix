@@ -1,4 +1,3 @@
-// import * as React from 'react';
 import {
   DataGrid,
   GridActionsCellItem,
@@ -106,13 +105,28 @@ export default function Dashboard() {
   // ... (previous useEffect)
 
   const handleEditClick = (id: number) => () => {
-    setRowModesModel({ ...rowModesModel, [id]: { mode: GridRowModes.Edit } });
+    setRowModesModel((prevRowModesModel) => ({
+      ...prevRowModesModel,
+      [id]: { mode: GridRowModes.Edit },
+    }));
   };
-
+  
   const handleSaveClick = (id: number) => () => {
-    setRowModesModel({ ...rowModesModel, [id]: { mode: GridRowModes.View } });
+    setRowModesModel((prevRowModesModel) => ({
+      ...prevRowModesModel,
+      [id]: { mode: GridRowModes.View },
+    }));
+  
+    // Find the edited row in the data array
+    const updatedData = data.map((row) =>
+      row.id === id ? { ...row, isNew: false } : row
+    );
+  
+    setData(updatedData);
+    setFilteredData(updatedData);
   };
-
+  
+  
   const handleDeleteClick = (id: number) => () => {
     const updatedData = data.filter((item) => item.id !== id);
     setData(updatedData);
