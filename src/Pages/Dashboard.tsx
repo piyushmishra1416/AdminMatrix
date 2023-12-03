@@ -1,8 +1,12 @@
 // import * as React from 'react';
-import { DataGrid, GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
+import { DataGrid, GridActionsCellItem, GridColDef, GridRowModes, GridRowModesModel } from '@mui/x-data-grid';
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 import SearchAppBar from '../components/SearchBar';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/DeleteOutlined';
+import SaveIcon from '@mui/icons-material/Save';
+import CancelIcon from '@mui/icons-material/Close';
 
 interface UserData {
   id: number;
@@ -25,20 +29,79 @@ export default function Dashboard() {
     },
     {
       field: 'actions',
+      type: 'actions',
       headerName: 'Actions',
-      headerClassName: 'column-title', 
-      width: 150,
-      renderCell: (params: GridRenderCellParams) => (
-        <div>
-          <button onClick={() => handleEdit(params.row.id)}>Edit</button>
-          <button onClick={() => handleDelete(params.row.id)}>Delete</button>
-        </div>
-      ),
+      width: 100,
+      cellClassName: 'actions',
+      getActions: ({ id }) => {
+        const isInEditMode = rowModesModel[id]?.mode === GridRowModes.Edit;
+
+        if (isInEditMode) {
+          return [
+            <GridActionsCellItem
+              icon={<SaveIcon />}
+              label="Save"
+              sx={{
+                color: 'primary.main',
+              }}
+              onClick={handleSaveClick(id as number)}
+            />,
+            <GridActionsCellItem
+              icon={<CancelIcon />}
+              label="Cancel"
+              className="textPrimary"
+              onClick={handleCancelClick(id as number)}
+              color="inherit"
+            />,
+          ];
+        }
+
+        return [
+          <GridActionsCellItem
+            icon={<EditIcon />}
+            label="Edit"
+            className="textPrimary"
+            onClick={handleEditClick(id as number)}
+            color="inherit"
+          />,
+          <GridActionsCellItem
+            icon={<DeleteIcon />}
+            label="Delete"
+            onClick={handleDeleteClick(id as number)}
+            color="inherit"
+          />,
+        ];
+      },
     },
   ];
   const [data, setData] = useState<UserData[]>([]);
   const [filteredData, setFilteredData] = useState<UserData[]>([]);
-  // const [searchQuery, setSearchQuery] = useState<string>('');
+  const [rowModesModel, setRowModesModel] = useState<GridRowModesModel>({});
+
+  // ... (previous useEffect)
+
+  const handleEditClick = (id: number) => () => {
+    setRowModesModel({ ...rowModesModel, [id]: { mode: GridRowModes.Edit } });
+  };
+
+  const handleSaveClick = (id: number) => () => {
+    setRowModesModel({ ...rowModesModel, [id]: { mode: GridRowModes.View } });
+  };
+
+  const handleDeleteClick = (id: number) => () => {
+    const updatedData = data.filter(item => item.id !== id);
+    setData(updatedData);
+    setFilteredData(updatedData);
+  };
+
+  const handleCancelClick = (id: number) => () => {
+    setRowModesModel({
+      ...rowModesModel,
+      [id]: { mode: GridRowModes.View, ignoreModifications: true },
+    });
+  };
+
+ 
 
 useEffect(()=>{
    const fetchData = async() =>{
@@ -54,17 +117,17 @@ useEffect(()=>{
    }
    fetchData();
 },[]);
-const handleEdit = (id: number) => {
+// const handleEdit = (id: number) => {
   
-  console.log(`Edit clicked for ID: ${id}`);
-};
+//   console.log(`Edit clicked for ID: ${id}`);
+// };
 
-const handleDelete = (id: number) => {
-  // Handle delete action, e.g., show a confirmation dialog and delete the item
-  const updatedData = data.filter(item => item.id !== id);
-  setData(updatedData);
-  console.log(`Delete clicked for ID: ${id}`);
-};
+// const handleDelete = (id: number) => {
+//   // Handle delete action, e.g., show a confirmation dialog and delete the item
+//   const updatedData = data.filter(item => item.id !== id);
+//   setData(updatedData);
+//   console.log(`Delete clicked for ID: ${id}`);
+// };
 
 const handleSearch = (query: string) => {
   const filtered =data.filter(item =>
@@ -83,6 +146,7 @@ console.log(data);
       <DataGrid
          rows={filteredData}
         columns={columns}
+        rowModesModel={rowModesModel}
         initialState={{
           pagination: {
             paginationModel: { page: 0, pageSize: 10 },
