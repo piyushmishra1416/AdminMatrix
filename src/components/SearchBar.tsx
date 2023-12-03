@@ -52,6 +52,8 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
   },
 }));
 
+
+
 interface SearchAppBarProps {
   onSearch: (query: string) => void;
   onDeleteSelected: () => void;
@@ -65,8 +67,15 @@ export default function SearchAppBar(
 
   const handleSearch = (query: string) => {
     setSearchQuery(query);
-    onSearch(query);
+   //  onSearch(query);
   };
+
+  const handleKeyPress = (e: { key: string; }) => {
+   if (e.key === 'Enter') {
+      console.log('hello')
+     onSearch(searchQuery);
+   }
+ };
 
   return (
     <Box sx={{ flexGrow: 1 }}>
@@ -81,6 +90,7 @@ export default function SearchAppBar(
               inputProps={{ "aria-label": "search" }}
               value={searchQuery}
               onChange={(e) => handleSearch(e.target.value)}
+              onKeyUp={(e) => handleKeyPress(e)}
             />
           </Search>
           <Button
@@ -89,7 +99,7 @@ export default function SearchAppBar(
             onClick={onDeleteSelected}
             endIcon={<DeleteIcon />}
           >
-            Delete Selected
+            Delete All
           </Button>
         </Toolbar>
       </AppBar>

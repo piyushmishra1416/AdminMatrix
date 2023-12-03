@@ -14,7 +14,7 @@ import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/DeleteOutlined";
 import SaveIcon from "@mui/icons-material/Save";
 import CancelIcon from "@mui/icons-material/Close";
-import {  Grid, Pagination } from "@mui/material";
+import { Grid, Pagination } from "@mui/material";
 
 interface UserData {
   id: number;
@@ -29,26 +29,22 @@ export default function Dashboard() {
       field: "id",
       headerName: "ID",
       width: 70,
-      headerClassName: "column-title",
     },
     {
       field: "name",
-      headerName: " Name",
+      headerName: "Name",
       width: 300,
-      headerClassName: "column-title",
       editable: true,
     },
     {
       field: "email",
       headerName: "Email",
       width: 500,
-      headerClassName: "column-title",
       editable: true,
     },
     {
       field: "role",
       headerName: "Role",
-      headerClassName: "column-title",
       width: 200,
       editable: true,
     },
@@ -57,7 +53,6 @@ export default function Dashboard() {
       type: "actions",
       headerName: "Actions",
       width: 100,
-      cellClassName: "actions",
       getActions: ({ id }) => {
         const isInEditMode = rowModesModel[id]?.mode === GridRowModes.Edit;
 
@@ -87,7 +82,7 @@ export default function Dashboard() {
             icon={<EditIcon />}
             label="Edit"
             className="textPrimary edit"
-            onClick={handleEditClick(id as number)} 
+            onClick={handleEditClick(id as number)}
             color="inherit"
           />,
           <GridActionsCellItem
@@ -130,6 +125,7 @@ export default function Dashboard() {
       [id]: { mode: GridRowModes.View, ignoreModifications: true },
     });
   };
+  
 
   useEffect(() => {
     const fetchData = async () => {
@@ -145,6 +141,7 @@ export default function Dashboard() {
     };
     fetchData();
   }, []);
+
   const handleSearch = (query: string) => {
     const filtered = data.filter((item) =>
       Object.values(item).some((value) =>
@@ -172,17 +169,20 @@ export default function Dashboard() {
       console.log("No rows selected for deletion");
       return;
     }
-  
+
     const updatedData = data.filter((item) => !selectedRows.includes(item.id));
     setData(updatedData);
     setFilteredData(updatedData);
     setSelectedRows([]);
-    console.log("i am working")
+    console.log("i am working");
   };
 
   return (
     <div style={{ height: "100%", width: "100%" }}>
-      <SearchAppBar onSearch={handleSearch} onDeleteSelected={handleDeleteSelected} />
+      <SearchAppBar
+        onSearch={handleSearch}
+        onDeleteSelected={handleDeleteSelected}
+      />
       <DataGrid
         rows={currentPageData}
         columns={columns}
@@ -192,19 +192,26 @@ export default function Dashboard() {
             paginationModel: { page: 0, pageSize: 10 },
           },
         }}
+        sx={{
+          ".MuiDataGrid-columnHeaderTitle": {
+            fontWeight: "bold",
+          },
+        }}
         pageSizeOptions={[5, 10]}
         checkboxSelection
         rowSelectionModel={selectedRows}
-        onRowSelectionModelChange={(newSelection) => setSelectedRows(newSelection)}
+        onRowSelectionModelChange={(newSelection) =>
+          setSelectedRows(newSelection)
+        }
       />
-     <Grid container justifyContent="center">
+      <Grid container justifyContent="center">
         <Pagination
           count={Math.ceil(filteredData.length / pageSize)}
           page={currentPage}
           onChange={(_event, page) => handlePageChange(page)}
           showFirstButton
           showLastButton
-          sx={{ '& .MuiPaginationItem-root': { fontSize: '1.2rem' } }} 
+          sx={{ "& .MuiPaginationItem-root": { fontSize: "1.2rem" } }}
         />
       </Grid>
     </div>
