@@ -1,8 +1,19 @@
 // import * as React from 'react';
-import { DataGrid, GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
-import { useEffect, useState } from 'react';
-import axios from 'axios';
-import SearchAppBar from '../components/SearchBar';
+import {
+  DataGrid,
+  GridActionsCellItem,
+  GridColDef,
+  GridRowModes,
+  GridRowModesModel,
+} from "@mui/x-data-grid";
+import { useEffect, useState } from "react";
+import axios from "axios";
+import SearchAppBar from "../components/SearchBar";
+import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/DeleteOutlined";
+import SaveIcon from "@mui/icons-material/Save";
+import CancelIcon from "@mui/icons-material/Close";
+import { Grid, Pagination } from "@mui/material";
 
 interface UserData {
   id: number;
@@ -13,76 +24,152 @@ interface UserData {
 
 export default function Dashboard() {
   const columns: GridColDef[] = [
-    { field: 'id', headerName: 'ID', width: 70 , headerClassName: 'column-title',  },
-    { field: 'name', headerName: ' Name', width: 300,  headerClassName: 'column-title', editable: true },
-    { field: 'email', headerName: 'Email', width: 500, headerClassName: 'column-title',editable: true  },
     {
-      field: 'role',
-      headerName: 'Role',
-      headerClassName: 'column-title', 
-      width: 200,
-      editable: true
+      field: "id",
+      headerName: "ID",
+      width: 70,
+      headerClassName: "column-title",
     },
     {
-      field: 'actions',
-      headerName: 'Actions',
-      headerClassName: 'column-title', 
-      width: 150,
-      renderCell: (params: GridRenderCellParams) => (
-        <div>
-          <button onClick={() => handleEdit(params.row.id)}>Edit</button>
-          <button onClick={() => handleDelete(params.row.id)}>Delete</button>
-        </div>
-      ),
+      field: "name",
+      headerName: " Name",
+      width: 300,
+      headerClassName: "column-title",
+      editable: true,
+    },
+    {
+      field: "email",
+      headerName: "Email",
+      width: 500,
+      headerClassName: "column-title",
+      editable: true,
+    },
+    {
+      field: "role",
+      headerName: "Role",
+      headerClassName: "column-title",
+      width: 200,
+      editable: true,
+    },
+    {
+      field: "actions",
+      type: "actions",
+      headerName: "Actions",
+      width: 100,
+      cellClassName: "actions",
+      getActions: ({ id }) => {
+        const isInEditMode = rowModesModel[id]?.mode === GridRowModes.Edit;
+
+        if (isInEditMode) {
+          return [
+            <GridActionsCellItem
+              icon={<SaveIcon />}
+              label="Save"
+              sx={{
+                color: "primary.main",
+              }}
+              onClick={handleSaveClick(id as number)}
+            />,
+            <GridActionsCellItem
+              icon={<CancelIcon />}
+              label="Cancel"
+              className="textPrimary"
+              onClick={handleCancelClick(id as number)}
+              color="inherit"
+            />,
+          ];
+        }
+
+        return [
+          <GridActionsCellItem
+            icon={<EditIcon />}
+            label="Edit"
+            className="textPrimary"
+            onClick={handleEditClick(id as number)}
+            color="inherit"
+          />,
+          <GridActionsCellItem
+            icon={<DeleteIcon />}
+            label="Delete"
+            onClick={handleDeleteClick(id as number)}
+            color="inherit"
+          />,
+        ];
+      },
     },
   ];
   const [data, setData] = useState<UserData[]>([]);
   const [filteredData, setFilteredData] = useState<UserData[]>([]);
-  // const [searchQuery, setSearchQuery] = useState<string>('');
+  const [rowModesModel, setRowModesModel] = useState<GridRowModesModel>({});
+  const pageSize = 10; // Set the number of rows per page
+  const [currentPage, setCurrentPage] = useState(1);
 
-useEffect(()=>{
-   const fetchData = async() =>{
-      // setLoading(true); 
-      try{
-         const{data: response} = await axios.get('https://geektrust.s3-ap-southeast-1.amazonaws.com/adminui-problem/members.json')
-         setData(response);
-         setFilteredData(response);
-      }catch (error: any) {
-         console.log(error.message);
+  // ... (previous useEffect)
+
+  const handleEditClick = (id: number) => () => {
+    setRowModesModel({ ...rowModesModel, [id]: { mode: GridRowModes.Edit } });
+  };
+
+  const handleSaveClick = (id: number) => () => {
+    setRowModesModel({ ...rowModesModel, [id]: { mode: GridRowModes.View } });
+  };
+
+  const handleDeleteClick = (id: number) => () => {
+    const updatedData = data.filter((item) => item.id !== id);
+    setData(updatedData);
+    setFilteredData(updatedData);
+  };
+
+  const handleCancelClick = (id: number) => () => {
+    setRowModesModel({
+      ...rowModesModel,
+      [id]: { mode: GridRowModes.View, ignoreModifications: true },
+    });
+  };
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const { data: response } = await axios.get(
+          "https://geektrust.s3-ap-southeast-1.amazonaws.com/adminui-problem/members.json"
+        );
+        setData(response);
+        setFilteredData(response);
+      } catch (error: any) {
+        console.log(error.message);
       }
-      // setLoading(false);
-   }
-   fetchData();
-},[]);
-const handleEdit = (id: number) => {
-  
-  console.log(`Edit clicked for ID: ${id}`);
-};
+    };
+    fetchData();
+  }, []);
+  const handleSearch = (query: string) => {
+    const filtered = data.filter((item) =>
+      Object.values(item).some((value) =>
+        String(value).toLowerCase().includes(query.toLowerCase())
+      )
+    );
+    setFilteredData(filtered);
+    setCurrentPage(1);
+  };
 
-const handleDelete = (id: number) => {
-  // Handle delete action, e.g., show a confirmation dialog and delete the item
-  const updatedData = data.filter(item => item.id !== id);
-  setData(updatedData);
-  console.log(`Delete clicked for ID: ${id}`);
-};
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
 
-const handleSearch = (query: string) => {
-  const filtered =data.filter(item =>
-    Object.values(item).some(value =>
-      String(value).toLowerCase().includes(query.toLowerCase())
-    )
-  );
-  setFilteredData(filtered);
-};
+  // Calculate the start and end index of the current page
+  const startIndex = (currentPage - 1) * pageSize;
+  const endIndex = startIndex + pageSize;
 
+  // Filter the data based on the current page
+  const currentPageData = filteredData.slice(startIndex, endIndex);
 
-console.log(data);
+  console.log(data);
   return (
-    <div style={{ height: '100%', width: '100%' }}>
-     <SearchAppBar onSearch={handleSearch} />
+    <div style={{ height: "100%", width: "100%" }}>
+      <SearchAppBar onSearch={handleSearch} />
       <DataGrid
-         rows={filteredData}
+        rows={currentPageData}
         columns={columns}
+        rowModesModel={rowModesModel}
         initialState={{
           pagination: {
             paginationModel: { page: 0, pageSize: 10 },
@@ -90,8 +177,17 @@ console.log(data);
         }}
         pageSizeOptions={[5, 10]}
         checkboxSelection
-
       />
+     <Grid container justifyContent="center">
+        <Pagination
+          count={Math.ceil(filteredData.length / pageSize)}
+          page={currentPage}
+          onChange={(_event, page) => handlePageChange(page)}
+          showFirstButton
+          showLastButton
+          sx={{ '& .MuiPaginationItem-root': { fontSize: '1.2rem' } }} 
+        />
+      </Grid>
     </div>
   );
 }
