@@ -69,9 +69,9 @@ export default function SearchAppBar({ onSearch }: SearchAppBarProps) {
     <Box sx={{ flexGrow: 1 }}>
       <AppBar position="static" sx={{ backgroundColor: '#000' }}>
         <Toolbar>
-          <Search>
+          <Search className='search-icon'>
             <SearchIconWrapper>
-              <SearchIcon />
+              <SearchIcon  />
             </SearchIconWrapper>
             <StyledInputBase
               placeholder="Search…"

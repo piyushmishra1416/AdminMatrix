@@ -3,6 +3,7 @@ import {
   DataGrid,
   GridActionsCellItem,
   GridColDef,
+  GridRowId,
   GridRowModes,
   GridRowModesModel,
 } from "@mui/x-data-grid";
@@ -13,7 +14,7 @@ import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/DeleteOutlined";
 import SaveIcon from "@mui/icons-material/Save";
 import CancelIcon from "@mui/icons-material/Close";
-import { Grid, Pagination } from "@mui/material";
+import { Button, Grid, Pagination } from "@mui/material";
 
 interface UserData {
   id: number;
@@ -65,6 +66,7 @@ export default function Dashboard() {
             <GridActionsCellItem
               icon={<SaveIcon />}
               label="Save"
+              className="save"
               sx={{
                 color: "primary.main",
               }}
@@ -73,7 +75,7 @@ export default function Dashboard() {
             <GridActionsCellItem
               icon={<CancelIcon />}
               label="Cancel"
-              className="textPrimary"
+              className="textPrimary cancel"
               onClick={handleCancelClick(id as number)}
               color="inherit"
             />,
@@ -84,13 +86,14 @@ export default function Dashboard() {
           <GridActionsCellItem
             icon={<EditIcon />}
             label="Edit"
-            className="textPrimary"
-            onClick={handleEditClick(id as number)}
+            className="textPrimary edit"
+            onClick={handleEditClick(id as number)} 
             color="inherit"
           />,
           <GridActionsCellItem
             icon={<DeleteIcon />}
             label="Delete"
+            className="delete"
             onClick={handleDeleteClick(id as number)}
             color="inherit"
           />,
@@ -103,6 +106,7 @@ export default function Dashboard() {
   const [rowModesModel, setRowModesModel] = useState<GridRowModesModel>({});
   const pageSize = 10; // Set the number of rows per page
   const [currentPage, setCurrentPage] = useState(1);
+  const [selectedRows, setSelectedRows] = useState<GridRowId[]>([]);
 
   // ... (previous useEffect)
 
@@ -162,6 +166,18 @@ export default function Dashboard() {
   // Filter the data based on the current page
   const currentPageData = filteredData.slice(startIndex, endIndex);
 
+  const handleDeleteSelected = () => {
+    if (selectedRows.length === 0) {
+      // Provide some feedback to the user, e.g., show a message or prevent deletion
+      console.log("No rows selected for deletion");
+      return;
+    }
+  
+    const updatedData = data.filter((item) => !selectedRows.includes(item.id));
+    setData(updatedData);
+    setFilteredData(updatedData);
+    setSelectedRows([]);
+  };
   console.log(data);
   return (
     <div style={{ height: "100%", width: "100%" }}>
@@ -177,6 +193,8 @@ export default function Dashboard() {
         }}
         pageSizeOptions={[5, 10]}
         checkboxSelection
+        rowSelectionModel={selectedRows}
+        onRowSelectionModelChange={(newSelection) => setSelectedRows(newSelection)}
       />
      <Grid container justifyContent="center">
         <Pagination
@@ -188,6 +206,14 @@ export default function Dashboard() {
           sx={{ '& .MuiPaginationItem-root': { fontSize: '1.2rem' } }} 
         />
       </Grid>
+      <Button
+        variant="contained"
+        color="error"
+        onClick={handleDeleteSelected}
+        style={{ marginTop: '16px' }}
+      >
+        Delete Selected
+      </Button>
     </div>
   );
 }
