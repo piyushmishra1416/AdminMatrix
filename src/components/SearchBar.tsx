@@ -7,6 +7,7 @@ import InputBase from "@mui/material/InputBase";
 import SearchIcon from "@mui/icons-material/Search";
 import { useState } from "react";
 import { Button } from "@mui/material";
+import DeleteIcon from '@mui/icons-material/Delete';
 
 const Search = styled("div")(({ theme }) => ({
   position: "relative",
@@ -70,7 +71,7 @@ export default function SearchAppBar(
   return (
     <Box sx={{ flexGrow: 1 }}>
       <AppBar position="static" sx={{ backgroundColor: "#000" }}>
-        <Toolbar>
+      <Toolbar sx={{ justifyContent: "space-between" }}>
           <Search className="search-icon">
             <SearchIconWrapper>
               <SearchIcon />
@@ -86,7 +87,7 @@ export default function SearchAppBar(
             variant="contained"
             color="error"
             onClick={onDeleteSelected}
-            style={{ marginTop: "16px" }}
+            endIcon={<DeleteIcon />}
           >
             Delete Selected
           </Button>

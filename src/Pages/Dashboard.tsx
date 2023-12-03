@@ -207,14 +207,6 @@ export default function Dashboard() {
           sx={{ '& .MuiPaginationItem-root': { fontSize: '1.2rem' } }} 
         />
       </Grid>
-      <Button
-        variant="contained"
-        color="error"
-        onClick={handleDeleteSelected}
-        style={{ marginTop: '16px' }}
-      >
-        Delete Selected
-      </Button>
     </div>
   );
 }
